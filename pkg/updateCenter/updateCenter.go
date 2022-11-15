@@ -107,12 +107,13 @@ type UpdateCenter struct {
 	} `json:"warnings"`
 }
 
+// you can pass empty string to get latest core version package
 func Get(coreVersion string) *UpdateCenter {
 
-	if coreVersion != "" {
-		coreVersion = "?version=stable-" + coreVersion
-	} else {
+	if coreVersion == "" {
 		logrus.Warnln("[WARN] You didn't pass '--core'. Will use LTS core version")
+	} else {
+		coreVersion = "?version=stable-" + coreVersion
 	}
 
 	// Create the file
