@@ -3,23 +3,21 @@ package updateCenter
 // TODO: its not cmd package
 import (
 	"encoding/json"
-	"io"
-	"io/ioutil"
-	"net/http"
+	"errors"
 	"os"
-	"time"
 
+	"github.com/emelianrus/jenkins-update-center/pkg/request"
 	"github.com/sirupsen/logrus"
 )
 
 const (
 	JENKINS_PLUGINS_URL = "https://updates.jenkins.io"
-	JSON_FILE_NAME      = "update-center.actual.json"
-
-	UPDATE_CENTER_JSON_LOCATION = JENKINS_PLUGINS_URL + "/" + JSON_FILE_NAME
 )
 
-const CACHED_FILE_NAME = "update-center.json"
+const (
+	FILE_NAME                   = "update-center.actual.json"
+	UPDATE_CENTER_JSON_LOCATION = JENKINS_PLUGINS_URL + "/" + FILE_NAME
+)
 
 type UpdateCenter struct {
 	ConnectionCheckUrl string `json:"connectionCheckUrl"`
@@ -116,39 +114,22 @@ func Get(coreVersion string) *UpdateCenter {
 		coreVersion = "?version=stable-" + coreVersion
 	}
 
-	// Create the file
-	file, err := os.Create(CACHED_FILE_NAME)
-	if err != nil {
-		logrus.Errorln(err)
-		return nil
-	}
-	defer file.Close()
+	URL_LOCATION := UPDATE_CENTER_JSON_LOCATION + coreVersion
 
-	URL := UPDATE_CENTER_JSON_LOCATION + coreVersion
-	var myClient = &http.Client{Timeout: 10 * time.Second}
+	var fileContent []byte
 
-	response, err := myClient.Get(URL)
-	logrus.Infof("Downloading: %s \n", URL)
-	if err != nil {
-		logrus.Errorln(err)
-		return nil
-	}
-	defer response.Body.Close()
-
-	// Check server response
-	if response.StatusCode != http.StatusOK {
-		logrus.Printf("bad status: %s \n", response.Status)
-		return nil
-	}
-	_, err = io.Copy(file, response.Body)
-	if err != nil {
-		logrus.Errorln(err)
-		return nil
-	}
-
-	fileContent, err := ioutil.ReadFile(CACHED_FILE_NAME)
-	if err != nil {
-		logrus.Println(err)
+	if _, err := os.Stat(request.GetFileName(URL_LOCATION)); errors.Is(err, os.ErrNotExist) {
+		logrus.Infoln("cache miss")
+		fileContent, err = request.Do(URL_LOCATION)
+		if err != nil {
+			logrus.Println(err)
+		}
+	} else {
+		logrus.Infoln("cache hit")
+		fileContent, err = os.ReadFile(request.GetFileName(URL_LOCATION))
+		if err != nil {
+			logrus.Println(err)
+		}
 	}
 
 	var updateCenter UpdateCenter
