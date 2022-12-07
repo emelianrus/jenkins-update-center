@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/emelianrus/jenkins-update-center/pkg/pluginVersions"
 	"github.com/emelianrus/jenkins-update-center/pkg/updateCenter"
 )
 
@@ -15,4 +16,13 @@ func main() {
 	// https://github.com/emelianrus/jenkins-update-center/blob/master/pkg/updateCenter/updateCenter.go#L24-L108
 	fmt.Println(updateCenter.Plugins["blueocean"].Labels)
 
+	// OR
+
+	pluginVersions := pluginVersions.Get()
+	//fmt.Println(pluginVersions.Plugins)
+	fmt.Println("")
+	//fmt.Println(pluginVersions.Plugins["blueocean"])
+
+	fmt.Println("")
+	fmt.Println(pluginVersions.Plugins["blueocean"]["1.25.3"])
 }
