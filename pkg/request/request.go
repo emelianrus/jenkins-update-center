@@ -11,14 +11,15 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func GetFileName(url string) string {
+// Get file name from url, used to create cache file
+func getFileName(url string) string {
 	return strings.Split(path.Base(url), "?")[0]
 }
 
-// request
+// Do request with passed url and return content
 func Do(url string) ([]byte, error) {
-	fileName := GetFileName(url)
-	// Create the file
+	fileName := getFileName(url)
+
 	file, err := os.Create(fileName)
 	if err != nil {
 		logrus.Errorln(err)
@@ -36,9 +37,8 @@ func Do(url string) ([]byte, error) {
 	}
 	defer response.Body.Close()
 
-	// Check server response
 	if response.StatusCode != http.StatusOK {
-		logrus.Printf("bad status: %s \n", response.Status)
+		logrus.Errorf("bad status: %s \n", response.Status)
 		return nil, err
 	}
 	_, err = io.Copy(file, response.Body)
@@ -49,7 +49,7 @@ func Do(url string) ([]byte, error) {
 
 	fileContent, err := os.ReadFile(fileName)
 	if err != nil {
-		logrus.Println(err)
+		logrus.Errorln(err)
 		return nil, err
 	}
 
