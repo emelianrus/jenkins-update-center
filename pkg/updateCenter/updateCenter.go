@@ -1,6 +1,5 @@
 package updateCenter
 
-// TODO: its not cmd package
 import (
 	"encoding/json"
 	"errors"
@@ -10,15 +9,16 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const (
-	JENKINS_PLUGINS_URL = "https://updates.jenkins.io"
-)
+// Jenkins update center root page url
+const JENKINS_UPDATE_CENTER_URL = "https://updates.jenkins.io"
 
 const (
-	FILE_NAME                   = "update-center.actual.json"
-	UPDATE_CENTER_JSON_LOCATION = JENKINS_PLUGINS_URL + "/" + FILE_NAME
+	URL_LOCATION                = "update-center.actual.json"
+	UPDATE_CENTER_JSON_LOCATION = JENKINS_UPDATE_CENTER_URL + "/" + URL_LOCATION
 )
 
+// UpdateCenter type
+// https://github.com/jenkins-infra/update-center2/blob/master/site/LAYOUT.md#update-center-jsonish-files
 type UpdateCenter struct {
 	ConnectionCheckUrl string `json:"connectionCheckUrl"`
 	Core               struct {
@@ -105,7 +105,9 @@ type UpdateCenter struct {
 	} `json:"warnings"`
 }
 
-// you can pass empty string to get latest core version package
+// TODO: DRY, make common
+// Returns *UpdateCenter type with data
+// you can pass empty string to get latest core version package or specific version of jenkins core
 func Get(coreVersion string) *UpdateCenter {
 
 	if coreVersion == "" {
@@ -114,19 +116,21 @@ func Get(coreVersion string) *UpdateCenter {
 		coreVersion = "?version=stable-" + coreVersion
 	}
 
-	URL_LOCATION := UPDATE_CENTER_JSON_LOCATION + coreVersion
+	URL := UPDATE_CENTER_JSON_LOCATION + coreVersion
+
+	CACHE_FILE_NAME := URL_LOCATION
 
 	var fileContent []byte
 
-	if _, err := os.Stat(request.GetFileName(URL_LOCATION)); errors.Is(err, os.ErrNotExist) {
+	if _, err := os.Stat(CACHE_FILE_NAME); errors.Is(err, os.ErrNotExist) {
 		logrus.Infoln("cache miss")
-		fileContent, err = request.Do(URL_LOCATION)
+		fileContent, err = request.Do(URL)
 		if err != nil {
 			logrus.Println(err)
 		}
 	} else {
 		logrus.Infoln("cache hit")
-		fileContent, err = os.ReadFile(request.GetFileName(URL_LOCATION))
+		fileContent, err = os.ReadFile(CACHE_FILE_NAME)
 		if err != nil {
 			logrus.Println(err)
 		}

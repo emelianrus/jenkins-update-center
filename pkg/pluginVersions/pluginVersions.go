@@ -9,14 +9,17 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const JENKINS_PLUGINS_URL = "https://updates.jenkins.io"
+// Core jenkins url for update-center
+const JENKINS_UPDATE_CENTER_URL = "https://updates.jenkins.io"
 
 const (
-	CACHED_FILE_NAME = "plugin-versions.json"
-	URL_LOCATION     = JENKINS_PLUGINS_URL + "/" + "current/plugin-versions.json"
+	URL_LOCATION = "plugin-versions.json"
+	URL          = JENKINS_UPDATE_CENTER_URL + "/" + "current/" + URL_LOCATION
 )
 
-type pluginVersions struct {
+// PluginVersions type
+// https://github.com/jenkins-infra/update-center2/blob/master/site/LAYOUT.md#plugin-versions-json-file
+type PluginVersions struct {
 	GenerationTimestamp string `json:"generationTimestamp"`
 
 	Plugins map[string]map[string]struct {
@@ -49,25 +52,27 @@ type pluginVersions struct {
 }
 
 // TODO: DRY, make common
-// you can pass empty string to get latest core version package
-func Get() *pluginVersions {
+// Returns *PluginVersions type with data
+func Get() *PluginVersions {
 	var fileContent []byte
 
-	if _, err := os.Stat(request.GetFileName(URL_LOCATION)); errors.Is(err, os.ErrNotExist) {
+	CACHE_FILE_NAME := URL_LOCATION
+
+	if _, err := os.Stat(CACHE_FILE_NAME); errors.Is(err, os.ErrNotExist) {
 		logrus.Infoln("cache miss")
-		fileContent, err = request.Do(URL_LOCATION)
+		fileContent, err = request.Do(URL)
 		if err != nil {
 			logrus.Println(err)
 		}
 	} else {
 		logrus.Infoln("cache hit")
-		fileContent, err = os.ReadFile(request.GetFileName(URL_LOCATION))
+		fileContent, err = os.ReadFile(CACHE_FILE_NAME)
 		if err != nil {
 			logrus.Println(err)
 		}
 	}
 
-	var pluginVersions pluginVersions
+	var pluginVersions PluginVersions
 	if err := json.Unmarshal(fileContent, &pluginVersions); err != nil {
 		logrus.Errorln(err)
 		logrus.Errorln("Can not unmarshal JSON")

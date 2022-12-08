@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/emelianrus/jenkins-update-center/pkg/coreVersion"
 	"github.com/emelianrus/jenkins-update-center/pkg/pluginVersions"
 	"github.com/emelianrus/jenkins-update-center/pkg/updateCenter"
 )
@@ -19,10 +20,17 @@ func main() {
 	// OR
 
 	pluginVersions := pluginVersions.Get()
-	//fmt.Println(pluginVersions.Plugins)
+	// fmt.Println(pluginVersions.Plugins)
 	fmt.Println("")
-	//fmt.Println(pluginVersions.Plugins["blueocean"])
+	// fmt.Println(pluginVersions.Plugins["blueocean"])
 
 	fmt.Println("")
 	fmt.Println(pluginVersions.Plugins["blueocean"]["1.25.3"])
+
+	fmt.Println("--- get jenkins versions ---")
+	stableCoreVersion, _ := coreVersion.GetStableCoreVersion()
+	fmt.Println(stableCoreVersion)
+
+	latestCoreVersion, _ := coreVersion.GetLatestCoreVersion()
+	fmt.Println(latestCoreVersion)
 }
