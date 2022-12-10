@@ -9,7 +9,16 @@ https://github.com/jenkins-infra/update-center2/blob/master/site/LAYOUT.md
 parses:
 `https://updates.jenkins.io`
 
-examples:
+
+## Supported endpoints
+
+* Root update center page aka `update-center.json`
+* Plugin versions aka `plugin-versions.json`
+* Get stable(LTS) jenkins core `stable/latestCore.txt`
+* Get latest jenkins core aka `current/latestCore.txt`
+
+
+example:
 
 ```
 	fmt.Println("----------- Update center ----------->>")
@@ -38,14 +47,16 @@ examples:
 ```
 
 
+
 ## TODO:
 
-* support repos
+* support switch between repos
 ```
 stable
 current
 experimental
 ```
+currently only hard coded ones
 
 * Release history https://github.com/jenkins-infra/update-center2/blob/master/site/LAYOUT.md#release-history-json-file
 * Plugin documentation https://github.com/jenkins-infra/update-center2/blob/master/site/LAYOUT.md#plugin-documentation-urls-json-file
