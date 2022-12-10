@@ -2,20 +2,20 @@ package updateCenter
 
 import (
 	"encoding/json"
-	"errors"
-	"os"
 
 	"github.com/emelianrus/jenkins-update-center/pkg/request"
 	"github.com/sirupsen/logrus"
 )
 
+const REPO = "current"
+
 // Jenkins update center root page url
 const JENKINS_UPDATE_CENTER_URL = "https://updates.jenkins.io"
 
-const (
-	URL_LOCATION                = "update-center.actual.json"
-	UPDATE_CENTER_JSON_LOCATION = JENKINS_UPDATE_CENTER_URL + "/" + URL_LOCATION
-)
+// Endpoint file name
+const URL_LOCATION = "update-center.actual.json"
+
+const URL = JENKINS_UPDATE_CENTER_URL + "/" + REPO + "/" + URL_LOCATION
 
 // UpdateCenter type
 // https://github.com/jenkins-infra/update-center2/blob/master/site/LAYOUT.md#update-center-jsonish-files
@@ -105,41 +105,27 @@ type UpdateCenter struct {
 	} `json:"warnings"`
 }
 
-// TODO: DRY, make common
-// Returns *UpdateCenter type with data
+// Returns *UpdateCenter, error type with data
 // you can pass empty string to get latest core version package or specific version of jenkins core
-func Get(coreVersion string) *UpdateCenter {
+func Get(coreVersion string) (*UpdateCenter, error) {
 
+	// get update center for specific jenkins core, should be arg for URL
 	if coreVersion == "" {
 		logrus.Warnln("[WARN] You didn't pass '--core'. Will use LTS core version")
 	} else {
 		coreVersion = "?version=stable-" + coreVersion
 	}
 
-	URL := UPDATE_CENTER_JSON_LOCATION + coreVersion
-
-	CACHE_FILE_NAME := URL_LOCATION
-
-	var fileContent []byte
-
-	if _, err := os.Stat(CACHE_FILE_NAME); errors.Is(err, os.ErrNotExist) {
-		logrus.Infoln("cache miss")
-		fileContent, err = request.Do(URL)
-		if err != nil {
-			logrus.Println(err)
-		}
-	} else {
-		logrus.Infoln("cache hit")
-		fileContent, err = os.ReadFile(CACHE_FILE_NAME)
-		if err != nil {
-			logrus.Println(err)
-		}
+	content, err := request.DoRequestWithCache(URL + coreVersion)
+	if err != nil {
+		return nil, err
 	}
 
 	var updateCenter UpdateCenter
-	if err := json.Unmarshal(fileContent, &updateCenter); err != nil {
+	if err := json.Unmarshal(content, &updateCenter); err != nil {
 		logrus.Errorln(err)
 		logrus.Errorln("Can not unmarshal JSON")
+		return nil, err
 	}
-	return &updateCenter
+	return &updateCenter, nil
 }

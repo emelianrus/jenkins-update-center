@@ -3,16 +3,13 @@ package coreVersion
 // we don't have cache for coreVersion module
 
 import (
-	"errors"
-	"io"
-	"net/http"
-
-	"github.com/sirupsen/logrus"
+	"github.com/emelianrus/jenkins-update-center/pkg/request"
 )
 
 // Jenkins update center root page url
 const JENKINS_UPDATE_CENTER_URL = "https://updates.jenkins.io"
 
+// Endpoint file name
 const URL_LOCATION = "latestCore.txt"
 
 const (
@@ -23,32 +20,19 @@ const (
 // Get latest core version of jenkins from update center
 // https://github.com/jenkins-infra/update-center2/blob/master/site/LAYOUT.md#latest-core-file
 func GetLatestCoreVersion() (string, error) {
-	return getPage(LATEST_URL)
+	content, err := request.DoRequest(LATEST_URL)
+	if err != nil {
+		return "", err
+	}
+	return string(content), nil
 }
 
 // Get stable core version of jenkins from update center
 // https://github.com/jenkins-infra/update-center2/blob/master/site/LAYOUT.md#latest-core-file
 func GetStableCoreVersion() (string, error) {
-	return getPage(STABLE_URL)
-}
-
-// Download page and read content
-func getPage(url string) (string, error) {
-	response, err := http.Get(url)
+	content, err := request.DoRequest(STABLE_URL)
 	if err != nil {
-		logrus.Errorln(err)
 		return "", err
-	}
-	content, err := io.ReadAll(response.Body)
-	defer response.Body.Close()
-
-	if err != nil {
-		logrus.Errorln(err)
-		return "", err
-	}
-
-	if response.StatusCode != 200 {
-		return "", errors.New("status code is not 200")
 	}
 	return string(content), nil
 }
