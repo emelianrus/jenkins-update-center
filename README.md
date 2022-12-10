@@ -12,7 +12,7 @@ parses:
 examples:
 
 ```
-    fmt.Println("----------- Update center ----------->>")
+	fmt.Println("----------- Update center ----------->>")
 	updateCenter, _ := updateCenter.Get("2.232.3")
 	// updateCenter, _ := updateCenter.Get("") // will use latest core version
 
