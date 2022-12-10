@@ -2,8 +2,6 @@ package updateCenter
 
 import (
 	"encoding/json"
-	"errors"
-	"os"
 
 	"github.com/emelianrus/jenkins-update-center/pkg/request"
 	"github.com/sirupsen/logrus"
@@ -106,9 +104,9 @@ type UpdateCenter struct {
 }
 
 // TODO: DRY, make common
-// Returns *UpdateCenter type with data
+// Returns *UpdateCenter, error type with data
 // you can pass empty string to get latest core version package or specific version of jenkins core
-func Get(coreVersion string) *UpdateCenter {
+func Get(coreVersion string) (*UpdateCenter, error) {
 
 	if coreVersion == "" {
 		logrus.Warnln("[WARN] You didn't pass '--core'. Will use LTS core version")
@@ -118,28 +116,15 @@ func Get(coreVersion string) *UpdateCenter {
 
 	URL := UPDATE_CENTER_JSON_LOCATION + coreVersion
 
-	CACHE_FILE_NAME := URL_LOCATION
-
-	var fileContent []byte
-
-	if _, err := os.Stat(CACHE_FILE_NAME); errors.Is(err, os.ErrNotExist) {
-		logrus.Infoln("cache miss")
-		fileContent, err = request.Do(URL)
-		if err != nil {
-			logrus.Println(err)
-		}
-	} else {
-		logrus.Infoln("cache hit")
-		fileContent, err = os.ReadFile(CACHE_FILE_NAME)
-		if err != nil {
-			logrus.Println(err)
-		}
+	content, err := request.DoRequestWithCache(URL)
+	if err != nil {
+		return nil, err
 	}
-
 	var updateCenter UpdateCenter
-	if err := json.Unmarshal(fileContent, &updateCenter); err != nil {
+	if err := json.Unmarshal(content, &updateCenter); err != nil {
 		logrus.Errorln(err)
 		logrus.Errorln("Can not unmarshal JSON")
+		return nil, err
 	}
-	return &updateCenter
+	return &updateCenter, nil
 }

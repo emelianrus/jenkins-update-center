@@ -10,27 +10,27 @@ import (
 
 func main() {
 
-	updateCenter := updateCenter.Get("2.232.3")
-	// updateCenter := updateCenter.Get("") // will use latest core version
+	fmt.Println("----------- Update center ----------->>")
+	updateCenter, _ := updateCenter.Get("2.232.3")
+	// updateCenter, _ := updateCenter.Get("") // will use latest core version
 
 	// all items you can find here
 	// https://github.com/emelianrus/jenkins-update-center/blob/master/pkg/updateCenter/updateCenter.go#L24-L108
 	fmt.Println(updateCenter.Plugins["blueocean"].Labels)
+	fmt.Println("<<----------- Update center -----------")
 
-	// OR
-
-	pluginVersions := pluginVersions.Get()
-	// fmt.Println(pluginVersions.Plugins)
-	fmt.Println("")
-	// fmt.Println(pluginVersions.Plugins["blueocean"])
-
-	fmt.Println("")
+	fmt.Println("----------- PluginVersions ----------->>")
+	pluginVersions, _ := pluginVersions.Get()
 	fmt.Println(pluginVersions.Plugins["blueocean"]["1.25.3"])
+	fmt.Println("<<----------- PluginVersions -----------")
 
-	fmt.Println("--- get jenkins versions ---")
+	fmt.Println("----------- StableCoreVersion ----------->>")
 	stableCoreVersion, _ := coreVersion.GetStableCoreVersion()
 	fmt.Println(stableCoreVersion)
+	fmt.Println("<<----------- StableCoreVersion -----------")
 
+	fmt.Println("----------- LatestCoreVersion ----------->>")
 	latestCoreVersion, _ := coreVersion.GetLatestCoreVersion()
 	fmt.Println(latestCoreVersion)
+	fmt.Println("<<----------- LatestCoreVersion -----------")
 }

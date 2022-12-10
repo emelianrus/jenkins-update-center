@@ -1,6 +1,7 @@
 package request
 
 import (
+	"errors"
 	"io"
 	"net/http"
 	"os"
@@ -12,24 +13,15 @@ import (
 )
 
 // Get file name from url, used to create cache file
-func getFileName(url string) string {
+func getFileNameFromUrl(url string) string {
 	return strings.Split(path.Base(url), "?")[0]
 }
 
 // Do request with passed url and return content
-func Do(url string) ([]byte, error) {
-	fileName := getFileName(url)
+func DoRequest(url string) ([]byte, error) {
+	var client = &http.Client{Timeout: 10 * time.Second}
 
-	file, err := os.Create(fileName)
-	if err != nil {
-		logrus.Errorln(err)
-		return nil, err
-	}
-	defer file.Close()
-
-	var myClient = &http.Client{Timeout: 10 * time.Second}
-
-	response, err := myClient.Get(url)
+	response, err := client.Get(url)
 	logrus.Infof("Downloading: %s \n", url)
 	if err != nil {
 		logrus.Errorln(err)
@@ -41,17 +33,54 @@ func Do(url string) ([]byte, error) {
 		logrus.Errorf("bad status: %s \n", response.Status)
 		return nil, err
 	}
-	_, err = io.Copy(file, response.Body)
+
+	content, err := io.ReadAll(response.Body)
 	if err != nil {
-		logrus.Errorln(err)
 		return nil, err
 	}
+	return content, nil
+}
 
-	fileContent, err := os.ReadFile(fileName)
-	if err != nil {
-		logrus.Errorln(err)
-		return nil, err
+func DoRequestWithCache(url string) ([]byte, error) {
+	var fileContent []byte
+	fileName := getFileNameFromUrl(url)
+
+	// check is file exist as "cached"
+	if _, err := os.Stat(fileName); errors.Is(err, os.ErrNotExist) {
+		logrus.Infoln("cache miss")
+
+		fileContent, err = DoRequest(url)
+		if err != nil {
+			logrus.Errorln(err)
+			return nil, err
+		}
+		// create file
+		file, err := os.Create(fileName)
+		if err != nil {
+			logrus.Errorln(err)
+			return nil, err
+		}
+		// write content to file
+		b, err := file.Write(fileContent)
+		if err != nil {
+			logrus.Errorln(err)
+			return nil, err
+		}
+		logrus.Debugf("wrote %d bytes to %s\n", b, fileName)
+
+		defer file.Close()
+
+		if err != nil {
+			logrus.Errorln(err)
+			return nil, err
+		}
+	} else {
+		logrus.Infoln("cache hit")
+		fileContent, err = os.ReadFile(fileName)
+		if err != nil {
+			logrus.Errorln(err)
+			return nil, err
+		}
 	}
-
 	return fileContent, nil
 }

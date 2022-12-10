@@ -2,8 +2,6 @@ package pluginVersions
 
 import (
 	"encoding/json"
-	"errors"
-	"os"
 
 	"github.com/emelianrus/jenkins-update-center/pkg/request"
 	"github.com/sirupsen/logrus"
@@ -52,30 +50,18 @@ type PluginVersions struct {
 }
 
 // TODO: DRY, make common
-// Returns *PluginVersions type with data
-func Get() *PluginVersions {
-	var fileContent []byte
+// Returns *PluginVersions, error type with data
+func Get() (*PluginVersions, error) {
 
-	CACHE_FILE_NAME := URL_LOCATION
-
-	if _, err := os.Stat(CACHE_FILE_NAME); errors.Is(err, os.ErrNotExist) {
-		logrus.Infoln("cache miss")
-		fileContent, err = request.Do(URL)
-		if err != nil {
-			logrus.Println(err)
-		}
-	} else {
-		logrus.Infoln("cache hit")
-		fileContent, err = os.ReadFile(CACHE_FILE_NAME)
-		if err != nil {
-			logrus.Println(err)
-		}
+	content, err := request.DoRequestWithCache(URL)
+	if err != nil {
+		return nil, err
 	}
-
 	var pluginVersions PluginVersions
-	if err := json.Unmarshal(fileContent, &pluginVersions); err != nil {
-		logrus.Errorln(err)
+	if err := json.Unmarshal(content, &pluginVersions); err != nil {
 		logrus.Errorln("Can not unmarshal JSON")
+		logrus.Errorln(err)
+		return nil, err
 	}
-	return &pluginVersions
+	return &pluginVersions, nil
 }
