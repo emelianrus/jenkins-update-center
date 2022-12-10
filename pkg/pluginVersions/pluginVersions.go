@@ -7,13 +7,15 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const REPO = "current"
+
 // Core jenkins url for update-center
 const JENKINS_UPDATE_CENTER_URL = "https://updates.jenkins.io"
 
-const (
-	URL_LOCATION = "plugin-versions.json"
-	URL          = JENKINS_UPDATE_CENTER_URL + "/" + "current/" + URL_LOCATION
-)
+// Endpoint file name
+const URL_LOCATION = "plugin-versions.json"
+
+const URL = JENKINS_UPDATE_CENTER_URL + "/" + REPO + "/" + URL_LOCATION
 
 // PluginVersions type
 // https://github.com/jenkins-infra/update-center2/blob/master/site/LAYOUT.md#plugin-versions-json-file

@@ -9,6 +9,7 @@ import (
 // Jenkins update center root page url
 const JENKINS_UPDATE_CENTER_URL = "https://updates.jenkins.io"
 
+// Endpoint file name
 const URL_LOCATION = "latestCore.txt"
 
 const (

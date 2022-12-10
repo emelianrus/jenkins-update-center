@@ -41,6 +41,7 @@ func DoRequest(url string) ([]byte, error) {
 	return content, nil
 }
 
+// Do request with passed url and return content, and create/check cached file on file system
 func DoRequestWithCache(url string) ([]byte, error) {
 	var fileContent []byte
 	fileName := getFileNameFromUrl(url)
@@ -67,13 +68,7 @@ func DoRequestWithCache(url string) ([]byte, error) {
 			return nil, err
 		}
 		logrus.Debugf("wrote %d bytes to %s\n", b, fileName)
-
 		defer file.Close()
-
-		if err != nil {
-			logrus.Errorln(err)
-			return nil, err
-		}
 	} else {
 		logrus.Infoln("cache hit")
 		fileContent, err = os.ReadFile(fileName)
