@@ -55,7 +55,7 @@ type PluginVersions struct {
 // Returns *PluginVersions, error type with data
 func Get() (*PluginVersions, error) {
 
-	content, err := request.DoRequestWithCache(URL)
+	content, err := request.DoRequestWithCache(URL, URL_LOCATION)
 	if err != nil {
 		return nil, err
 	}
