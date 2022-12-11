@@ -3,6 +3,7 @@ package updateCenter
 import (
 	"encoding/json"
 
+	coreVersions "github.com/emelianrus/jenkins-update-center/pkg/coreVersion"
 	"github.com/emelianrus/jenkins-update-center/pkg/request"
 	"github.com/sirupsen/logrus"
 )
@@ -108,15 +109,28 @@ type UpdateCenter struct {
 // Returns *UpdateCenter, error type with data
 // you can pass empty string to get latest core version package or specific version of jenkins core
 func Get(coreVersion string) (*UpdateCenter, error) {
-
+	var urlParam string
 	// get update center for specific jenkins core, should be arg for URL
 	if coreVersion == "" {
-		logrus.Warnln("[WARN] You didn't pass '--core'. Will use LTS core version")
+
+		stableCoreVersion, err := coreVersions.GetStableCoreVersion()
+		if err != nil {
+			return nil, err
+		}
+		coreVersion = stableCoreVersion
+		logrus.Warnln("[WARN] You didn't pass '--core'. Will use LTS core version '%s'", stableCoreVersion)
+		urlParam = "?version=stable-" + coreVersion
 	} else {
-		coreVersion = "?version=stable-" + coreVersion
+		// would be good to have param, but all tools requires version only
+		// like give me update center for "1.255.3" without stable prefix or so
+		// stable here for workaround for now, mb will be changed in future
+		urlParam = "?version=stable-" + coreVersion
 	}
 
-	content, err := request.DoRequestWithCache(URL + coreVersion)
+	// add prefix to update center json to understand which jenkins core used
+	cacheFileName := "stable-" + coreVersion + "-" + URL_LOCATION
+
+	content, err := request.DoRequestWithCache(URL+urlParam, cacheFileName)
 	if err != nil {
 		return nil, err
 	}

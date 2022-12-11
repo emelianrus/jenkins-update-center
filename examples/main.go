@@ -11,12 +11,12 @@ import (
 func main() {
 
 	fmt.Println("----------- Update center ----------->>")
-	updateCenter, _ := updateCenter.Get("2.232.3")
-	// updateCenter, _ := updateCenter.Get("") // will use latest core version
-
+	updateCenterByVersion, _ := updateCenter.Get("2.232.3")
+	fmt.Println(updateCenterByVersion.Core.Version)
+	updateCenter, _ := updateCenter.Get("") // will use latest core version
 	// all items you can find here
 	// https://github.com/emelianrus/jenkins-update-center/blob/master/pkg/updateCenter/updateCenter.go#L24-L108
-	fmt.Println(updateCenter.Plugins["blueocean"].Labels)
+	fmt.Println(updateCenter.Core.Version)
 	fmt.Println("<<----------- Update center -----------")
 
 	fmt.Println("----------- PluginVersions ----------->>")
