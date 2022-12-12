@@ -8,7 +8,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const REPO = "current"
+// TODO: make this configurable
+// Version of jenkins update center repo
+// https://github.com/jenkins-infra/update-center2/blob/master/site/LAYOUT.md#regular-tiered-update-sites-lts-and-weekly
+const REPO = "stable"
 
 // Jenkins update center root page url
 const JENKINS_UPDATE_CENTER_URL = "https://updates.jenkins.io"
