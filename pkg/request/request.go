@@ -5,18 +5,11 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
 )
-
-// Get file name from url, used to create cache file
-func getFileNameFromUrl(url string) string {
-	return strings.Split(path.Base(url), "?")[0]
-}
 
 // Do request with passed url and return content
 func DoRequest(url string) ([]byte, error) {
