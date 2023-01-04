@@ -5,17 +5,11 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path"
-	"strings"
+	"path/filepath"
 	"time"
 
 	"github.com/sirupsen/logrus"
 )
-
-// Get file name from url, used to create cache file
-func getFileNameFromUrl(url string) string {
-	return strings.Split(path.Base(url), "?")[0]
-}
 
 // Do request with passed url and return content
 func DoRequest(url string) ([]byte, error) {
@@ -41,12 +35,16 @@ func DoRequest(url string) ([]byte, error) {
 	return content, nil
 }
 
+var CACHE_DIR = os.TempDir() + string(filepath.Separator)
+
 // Do request with passed url and return content, and create/check cached file on file system
 func DoRequestWithCache(url string, cacheFileName string) ([]byte, error) {
 	var fileContent []byte
+	var filePath string = CACHE_DIR + cacheFileName
 
+	logrus.Infof("CACHE_DIR is: %s", CACHE_DIR)
 	// check is file exist as "cached"
-	if _, err := os.Stat(cacheFileName); errors.Is(err, os.ErrNotExist) {
+	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		logrus.Infoln("cache miss")
 
 		fileContent, err = DoRequest(url)
@@ -55,7 +53,7 @@ func DoRequestWithCache(url string, cacheFileName string) ([]byte, error) {
 			return nil, err
 		}
 		// create file
-		file, err := os.Create(cacheFileName)
+		file, err := os.Create(filePath)
 		if err != nil {
 			logrus.Errorln(err)
 			return nil, err
@@ -66,11 +64,11 @@ func DoRequestWithCache(url string, cacheFileName string) ([]byte, error) {
 			logrus.Errorln(err)
 			return nil, err
 		}
-		logrus.Debugf("wrote %d bytes to %s\n", b, cacheFileName)
+		logrus.Debugf("wrote %d bytes to %s\n", b, filePath)
 		defer file.Close()
 	} else {
 		logrus.Infoln("cache hit")
-		fileContent, err = os.ReadFile(cacheFileName)
+		fileContent, err = os.ReadFile(filePath)
 		if err != nil {
 			logrus.Errorln(err)
 			return nil, err
