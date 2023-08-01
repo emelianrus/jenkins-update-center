@@ -1,28 +1,11 @@
-package updateCenter
+package jenkinsSite
 
 import (
 	"encoding/json"
 
-	coreVersions "github.com/emelianrus/jenkins-update-center/pkg/coreVersion"
-	"github.com/emelianrus/jenkins-update-center/pkg/request"
 	"github.com/sirupsen/logrus"
 )
 
-// TODO: make this configurable
-// Version of jenkins update center repo
-// https://github.com/jenkins-infra/update-center2/blob/master/site/LAYOUT.md#regular-tiered-update-sites-lts-and-weekly
-const REPO = "stable"
-
-// Jenkins update center root page url
-const JENKINS_UPDATE_CENTER_URL = "https://updates.jenkins.io"
-
-// Endpoint file name
-const URL_LOCATION = "update-center.actual.json"
-
-const URL = JENKINS_UPDATE_CENTER_URL + "/" + REPO + "/" + URL_LOCATION
-
-// UpdateCenter type
-// https://github.com/jenkins-infra/update-center2/blob/master/site/LAYOUT.md#update-center-jsonish-files
 type UpdateCenter struct {
 	ConnectionCheckUrl string `json:"connectionCheckUrl"`
 	Core               struct {
@@ -109,31 +92,33 @@ type UpdateCenter struct {
 	} `json:"warnings"`
 }
 
+// https://updates.jenkins.io/stable/update-center.actual.json
+
+// TODO: make this configurable
+// Version of jenkins update center repo
+// https://github.com/jenkins-infra/update-center2/blob/master/site/LAYOUT.md#regular-tiered-update-sites-lts-and-weekly
+
+func NewUpdateCenter() UpdateCenter {
+	return UpdateCenter{}
+}
+
 // Returns *UpdateCenter, error type with data
 // you can pass empty string to get latest core version package or specific version of jenkins core
-func Get(coreVersion string) (*UpdateCenter, error) {
+func (uc UpdateCenter) Get(coreVersion string) (*UpdateCenter, error) {
+	logrus.Debugln("loading updateCenter")
 	var urlParam string
 	// get update center for specific jenkins core, should be arg for URL
 	if coreVersion == "" {
-
-		stableCoreVersion, err := coreVersions.GetStableCoreVersion()
-		if err != nil {
-			return nil, err
-		}
-		coreVersion = stableCoreVersion
-		logrus.Warnln("[WARN] You didn't pass '--core'. Will use LTS core version '%s'", stableCoreVersion)
-		urlParam = "?version=stable-" + coreVersion
-	} else {
-		// would be good to have param, but all tools requires version only
-		// like give me update center for "1.255.3" without stable prefix or so
-		// stable here for workaround for now, mb will be changed in future
-		urlParam = "?version=stable-" + coreVersion
+		logrus.Warnln("[WARN] You didn't pass '--core'")
 	}
+	// would be good to have param, but all tools requires version only
+	// like give me update center for "1.255.3" without stable prefix or so
+	// stable here for workaround for now, mb will be changed in future
+	urlParam = "?version=" + coreVersion
 
-	// add prefix to update center json to understand which jenkins core used
-	cacheFileName := "stable-" + coreVersion + "-" + URL_LOCATION
+	url := JENKINS_UPDATE_CENTER_URL + "/" + "stable" + "/" + "update-center.actual.json"
 
-	content, err := request.DoRequestWithCache(URL+urlParam, cacheFileName)
+	content, err := DoRequest(url + urlParam)
 	if err != nil {
 		return nil, err
 	}

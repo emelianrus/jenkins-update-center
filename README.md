@@ -16,34 +16,28 @@ parses:
 * Plugin versions aka `plugin-versions.json`
 * Get stable(LTS) jenkins core `stable/latestCore.txt`
 * Get latest jenkins core aka `current/latestCore.txt`
+* Get plugin release notes `https://plugin-site-issues.jenkins.io/api/plugin/<pluginName>/releases`
 
 
 example:
 
 ```
-	fmt.Println("----------- Update center ----------->>")
-	updateCenter, _ := updateCenter.Get("2.232.3")
-	// updateCenter, _ := updateCenter.Get("") // will use latest core version
+	js := jenkinsSite.NewJenkinsSite()
 
-	// all items you can find here
-	// https://github.com/emelianrus/jenkins-update-center/blob/master/pkg/updateCenter/updateCenter.go#L24-L108
-	fmt.Println(updateCenter.Plugins["blueocean"].Labels)
-	fmt.Println("<<----------- Update center -----------")
-
-	fmt.Println("----------- PluginVersions ----------->>")
-	pluginVersions, _ := pluginVersions.Get()
-	fmt.Println(pluginVersions.Plugins["blueocean"]["1.25.3"])
-	fmt.Println("<<----------- PluginVersions -----------")
-
-	fmt.Println("----------- StableCoreVersion ----------->>")
-	stableCoreVersion, _ := coreVersion.GetStableCoreVersion()
-	fmt.Println(stableCoreVersion)
-	fmt.Println("<<----------- StableCoreVersion -----------")
-
-	fmt.Println("----------- LatestCoreVersion ----------->>")
-	latestCoreVersion, _ := coreVersion.GetLatestCoreVersion()
+	latestCoreVersion, _ := js.GetLatestCoreVersion()
 	fmt.Println(latestCoreVersion)
-	fmt.Println("<<----------- LatestCoreVersion -----------")
+
+	stableCoreVersion, _ := js.GetStableCoreVersion()
+	fmt.Println(stableCoreVersion)
+
+	releaseNotes, _ := js.DownloadReleaseNotes("blueocean")
+	fmt.Println(releaseNotes)
+
+	pluginVersions, _ := js.PluginVersions.Get()
+	fmt.Println(pluginVersions)
+
+	updateCenter, _ := js.UpdateCenter.Get("2.401.3")
+	fmt.Println(updateCenter)
 ```
 
 

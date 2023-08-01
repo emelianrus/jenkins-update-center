@@ -1,21 +1,10 @@
-package pluginVersions
+package jenkinsSite
 
 import (
 	"encoding/json"
 
-	"github.com/emelianrus/jenkins-update-center/pkg/request"
 	"github.com/sirupsen/logrus"
 )
-
-const REPO = "current"
-
-// Core jenkins url for update-center
-const JENKINS_UPDATE_CENTER_URL = "https://updates.jenkins.io"
-
-// Endpoint file name
-const URL_LOCATION = "plugin-versions.json"
-
-const URL = JENKINS_UPDATE_CENTER_URL + "/" + REPO + "/" + URL_LOCATION
 
 // PluginVersions type
 // https://github.com/jenkins-infra/update-center2/blob/master/site/LAYOUT.md#plugin-versions-json-file
@@ -51,11 +40,17 @@ type PluginVersions struct {
 	UpdateCenterVersion string `json:"updateCenterVersion"`
 }
 
-// TODO: DRY, make common
-// Returns *PluginVersions, error type with data
-func Get() (*PluginVersions, error) {
+// https://updates.jenkins.io/current/plugin-versions.json
 
-	content, err := request.DoRequestWithCache(URL, URL_LOCATION)
+func NewPluginVersions() PluginVersions {
+	return PluginVersions{}
+}
+
+func (pv PluginVersions) Get() (*PluginVersions, error) {
+	logrus.Debugln("loading pluginVersions")
+	url := JENKINS_UPDATE_CENTER_URL + "/" + "current" + "/" + "plugin-versions.json"
+
+	content, err := DoRequest(url)
 	if err != nil {
 		return nil, err
 	}
