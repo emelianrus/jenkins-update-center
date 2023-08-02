@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/emelianrus/jenkins-update-center/pkg/jenkinsSite"
+	"github.com/emelianrus/jenkins-update-center/v2/pkg/jenkinsSite"
 )
 
 func main() {
