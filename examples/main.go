@@ -18,9 +18,9 @@ func main() {
 	releaseNotes, _ := js.DownloadReleaseNotes("blueocean")
 	fmt.Println(releaseNotes)
 
-	pluginVersions, _ := js.PluginVersions.Get()
+	pluginVersions, _ := js.GetPluginVersions()
 	fmt.Println(pluginVersions)
 
-	updateCenter, _ := js.UpdateCenter.Get("2.401.3")
+	updateCenter, _ := js.GetUpdateCenter("2.401.3")
 	fmt.Println(updateCenter)
 }
