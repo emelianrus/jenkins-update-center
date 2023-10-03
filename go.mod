@@ -1,4 +1,4 @@
-module github.com/emelianrus/jenkins-update-center
+module github.com/emelianrus/jenkins-update-center/v2
 
 go 1.19
 
